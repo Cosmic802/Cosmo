@@ -207,7 +207,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/** App-scoped MP3 player: survives activity recreation; plays /Music/CosmoStudy/*.mp3 */
+// App-scoped MP3 player: survives activity recreation; plays Music/CosmoStudy mp3 files
 object Mp3 {
     private var mp: MediaPlayer? = null
     val files = mutableStateListOf<File>()
