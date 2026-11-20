@@ -2,10 +2,12 @@ package dev.cosmo
 
 import android.app.AlarmManager
 import android.app.TimePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Environment
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -34,6 +36,10 @@ import java.util.*
 val Cyan = Color(0xFF00E5FF); val Crimson = Color(0xFFFF1744); val Panel = Color(0xFF0B0B10); val Dim = Color(0xFF8A8A99)
 val HABITS = listOf("Skincare AM", "Skincare PM", "Hair care", "Brush teeth AM", "Brush teeth PM", "Looksmax routine", "Workout")
 
+/** Mode switch that reports the exact error as a toast instead of crashing. */
+suspend fun safeSet(c: Context, m: Mode) = runCatching { ModeManager.set(c, m) }
+    .onFailure { Toast.makeText(c, "${it::class.simpleName}: ${it.message}", Toast.LENGTH_LONG).show() }
+
 fun doneSet(d: DayLog) = d.done.split(",").filter { it in HABITS }.toSet()
 fun score(d: DayLog) = (40f * doneSet(d).size / HABITS.size + 20f * minOf(1f, d.water / 3000f) +
     20f * minOf(1f, d.steps / 8000f) + 20f * minOf(1f, d.focus / 120f)).toInt()
@@ -53,7 +59,7 @@ class MainActivity : ComponentActivity() {
     /** Voice/Tasker/root hook: am start -n dev.cosmo/.MainActivity --es mode GAME */
     private fun handle(i: Intent) {
         val m = i.getStringExtra("mode")?.let { runCatching { Mode.valueOf(it.uppercase()) }.getOrNull() } ?: return
-        lifecycleScope.launch { ModeManager.set(this@MainActivity, m) }
+        lifecycleScope.launch { safeSet(this@MainActivity, m) }
     }
 }
 
@@ -94,7 +100,7 @@ class MainActivity : ComponentActivity() {
     info.entries.chunked(2).forEach { row ->
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             row.forEach { (m, t) ->
-                ModeCard(t.first, t.second, t.third, mode == m, Modifier.weight(1f)) { mode = m; scope.launch { ModeManager.set(c, m) } }
+                ModeCard(t.first, t.second, t.third, mode == m, Modifier.weight(1f)) { mode = m; scope.launch { safeSet(c, m) } }
             }
         }
     }

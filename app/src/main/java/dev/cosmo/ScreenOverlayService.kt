@@ -59,7 +59,7 @@ class ScreenOverlayService : Service() {
             root.addView(Button(this).apply { text = "EMERGENCY CALL"; setOnClickListener { dial(root) } },
                 FrameLayout.LayoutParams(WRAP, WRAP, Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL).apply { bottomMargin = 220 })
         }
-        wm.addView(root, lp(FILL, FILL, if (lock) 0 else FLAG_NOT_TOUCHABLE))
+        runCatching { wm.addView(root, lp(FILL, FILL, if (lock) 0 else FLAG_NOT_TOUCHABLE)) }
         main = root
     }
 
@@ -76,7 +76,7 @@ class ScreenOverlayService : Service() {
             text = t; setTextColor(Color.WHITE); textSize = 12f; setPadding(36, 14, 36, 14)
             background = GradientDrawable().apply { setColor(0xDD111111.toInt()); cornerRadius = 60f; setStroke(2, 0xFF00E5FF.toInt()) }
         }
-        wm.addView(v, lp(WRAP, WRAP, FLAG_NOT_TOUCHABLE).apply { gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL; y = 90 })
+        runCatching { wm.addView(v, lp(WRAP, WRAP, FLAG_NOT_TOUCHABLE).apply { gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL; y = 90 }) }
         pill = v
         ui.postDelayed({
             if (pill === v) { runCatching { wm.removeView(v) }; pill = null }

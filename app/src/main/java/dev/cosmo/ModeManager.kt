@@ -89,7 +89,7 @@ object ModeManager {
 
     private suspend fun dnd(c: Context, on: Boolean, starred: Boolean = false) {
         RootShell.exec("cmd notification allow_dnd ${c.packageName}")
-        if (on) {
+        if (on) runCatching {   // policy API throws if DND access isn't granted yet; the cmd below still works
             val cat = Policy.PRIORITY_CATEGORY_ALARMS or (if (starred) Policy.PRIORITY_CATEGORY_CALLS or Policy.PRIORITY_CATEGORY_MESSAGES else 0)
             val who = if (starred) Policy.PRIORITY_SENDERS_STARRED else 0
             c.getSystemService(NotificationManager::class.java).notificationPolicy = Policy(cat, who, who)
